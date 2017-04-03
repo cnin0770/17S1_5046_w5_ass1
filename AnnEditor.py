@@ -1,4 +1,11 @@
+''' 
+this is to format the raw data into sensible sheet, 
+and to generate the GOLD class by most-selected categories
+'''
+
+
 import csv
+from collections import Counter
 
 with open('5046_w4_0328_annotations.csv', "r", encoding='utf-8', errors='ignore') as ann:
     ann_csv = csv.reader(ann)
@@ -24,6 +31,12 @@ with open('5046_w4_0328_annotations.csv', "r", encoding='utf-8', errors='ignore'
     #     print(len(s))
     #
     # print(len(results))
+
+results[0].insert(1, 'GOLD')
+
+for k in range(1, 151):
+    kCount = Counter(results[k])
+    results[k].insert(1, kCount.most_common(1)[0][0])
 
 
 with open('ann_edited.csv', 'w') as ed:
