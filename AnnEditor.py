@@ -7,24 +7,27 @@ and to generate the GOLD class by most-selected categories
 import csv
 from collections import Counter
 
+lines = 8250
+units = 150
+
 with open('5046_w4_0328_annotations.csv', "r", encoding='utf-8', errors='ignore') as ann:
     ann_csv = csv.reader(ann)
     results = [[]]
     k = 0
 
-    for i in range(0, 151):
+    for i in range(0, units + 1):
         results.append([])
-        for j in range(0, 58):
+        for j in range(0, lines // units + 1):
             results[i].append('')
 
     for row in ann_csv:
-        if row[0] != results[0][k // 150]:
-            results[0][k // 150 + 1] = row[0]
+        if row[0] != results[0][k // units]:
+            results[0][k // units + 1] = row[0]
 
-        if row[1] != results[k % 150]:
-            results[k % 150 + 1][0] = row[1]
+        if row[1] != results[k % units]:
+            results[k % units + 1][0] = row[1]
 
-        results[k % 150 + 1][k // 150 + 1] = row[2]
+        results[k % units + 1][k // units + 1] = row[2]
         k += 1
 
     # for s in results:
@@ -34,7 +37,7 @@ with open('5046_w4_0328_annotations.csv', "r", encoding='utf-8', errors='ignore'
 
 results[0].insert(1, 'GOLD')
 
-for k in range(1, 151):
+for k in range(1, units + 1):
     kCount = Counter(results[k])
     results[k].insert(1, kCount.most_common(1)[0][0])
 
