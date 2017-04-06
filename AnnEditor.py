@@ -39,6 +39,17 @@ def getfile():
         kCount = Counter(results[k])
         results[k].insert(1, kCount.most_common(1)[0][0])
 
+    # same issue see AnnAnalyst line 69
+    # totalline = []
+    # exp = results
+    # exp.pop(0)
+    # # exp.pop(-1)
+    # for k in exp:
+    #     k.pop(0)
+    #     for l in k:
+    #         totalline.append(l)
+    # print(Counter(totalline))
+    results.pop(-1)
     return results
 
 

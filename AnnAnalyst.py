@@ -1,5 +1,6 @@
 '''
-this is to calculate the key indicators such as precision and recall given the sorted data and a specified Unikey
+this is to calculate the key inter- annotator agreement statistics such as precision and recall given the sorted data
+Fleiss' Kappa is printed in command line
 '''
 
 
@@ -8,10 +9,9 @@ from collections import Counter
 
 user = 'cnin0770'
 inputfile = 'ann_edited.csv'
-outputfile = 'ind_cnin0770.csv'
 tt = 150
 raters = 55
-cats = [
+cats = (
     'Education',
     'Entertainment',
     'Finance',
@@ -27,10 +27,10 @@ cats = [
     'Transport',
     'Other',
     'Error'
-]
+)
 
 
-def readmatrix(individual):
+def conmatrix(individual):
     gold = []
     pred = []
 
@@ -65,6 +65,8 @@ def readmatrix(individual):
         for i in range(0, tt):
             row = next(ann_csv)
             gold.append(row[1])
+            if row[col_no] == 'error':
+                row[col_no] = 'Error'  # 2 error instead of Error in the original data, see shot
             pred.append((row[col_no]))
             crs[row[1]][row[col_no]] += 1
 
@@ -76,7 +78,7 @@ def readmatrix(individual):
                 crs[row]['totalPred'] += crs[col][row]
 
     ann.close()
-    return crs
+    return crs  # individual Confusion matrix in each category, in form of dict
 
 
 def flissmatrix():
@@ -126,7 +128,12 @@ def flissmatrix():
 
 
 def analysing(matrix):
-    analyst = {}
+    analyst = {'overview': {
+        'tp': 0,
+        'fn': 0,
+        'fp': 0,
+        'tn': 0
+    }}
     for cat in cats:
         analyst[cat] = {}
 
@@ -145,8 +152,20 @@ def analysing(matrix):
         analyst[cow]['fp'] = fp
         analyst[cow]['tn'] = tn
 
+        analyst['overview']['tp'] += tp
+        analyst['overview']['fn'] += fn
+        analyst['overview']['fp'] += fp
+        analyst['overview']['tn'] += tn
+
         if tp == 0 & fn == 0 & fp == 0:
-            pass
+            analyst[cow]['precision'] = 1
+            analyst[cow]['recall'] = 1
+            analyst[cow]['f1'] = 1
+            analyst[cow]['accuracy'] = 1
+            analyst[cow]['marginalFalse'] = 1
+            analyst[cow]['marginalTrue'] = 0
+            analyst[cow]['expectedAgreement'] = 1
+            analyst[cow]['cohensKappa'] = 1
         else:
             analyst[cow]['precision'] = tp / (tp + fp)
             analyst[cow]['recall'] = tp / (tp + fn)
@@ -159,6 +178,33 @@ def analysing(matrix):
             analyst[cow]['cohensKappa'] = (analyst[cow]['accuracy'] - analyst[cow]['expectedAgreement']) /\
                                           (1 - analyst[cow]['expectedAgreement'])
 
+    analyst['overview']['tt'] = analyst['overview']['tp'] + analyst['overview']['fn'] \
+                                + analyst['overview']['fp'] + analyst['overview']['tn']
+
+    analyst['overview']['precision'] = analyst['overview']['tp'] / (analyst['overview']['tp'] +
+                                                                    analyst['overview']['fp'])
+    analyst['overview']['recall'] = analyst['overview']['tp'] / (analyst['overview']['tp'] +
+                                                                 analyst['overview']['fn'])
+    analyst['overview']['f1'] = (2 * analyst['overview']['precision'] * analyst['overview']['recall']) /\
+                                (analyst['overview']['precision'] + analyst['overview']['recall'])
+    analyst['overview']['accuracy'] = (analyst['overview']['tp'] + analyst['overview']['tn']) / \
+                                      analyst['overview']['tt']
+    analyst['overview']['marginalFalse'] = (analyst['overview']['tt'] - analyst['overview']['tp'] -
+                                            analyst['overview']['fp']) * \
+                                           (analyst['overview']['tt'] - analyst['overview']['tp'] -
+                                            analyst['overview']['fn']) / \
+                                           (analyst['overview']['tt'] * analyst['overview']['tt'])
+    analyst['overview']['marginalTrue'] = (analyst['overview']['tp'] + analyst['overview']['fp']) * \
+                                          (analyst['overview']['tp'] + analyst['overview']['fn']) / \
+                                          (analyst['overview']['tt'] * analyst['overview']['tt'])
+    analyst['overview']['expectedAgreement'] = analyst['overview']['marginalTrue'] + \
+                                               analyst['overview']['marginalFalse']
+    analyst['overview']['cohensKappa'] = (analyst['overview']['accuracy'] -
+                                          analyst['overview']['expectedAgreement']) / \
+                                         (1 - analyst['overview']['expectedAgreement'])
+
+    analyst['overview'].pop('tt', None)
+
     return analyst
 
 
@@ -169,7 +215,9 @@ def outputfun(res, outputf):
         toWrite[0].append(key)
 
     k = 1
-    for cat in cats:
+    catsX = list(cats)
+    catsX.append('overview')
+    for cat in catsX:
         toWrite.append([])
         toWrite[k].append(cat)
         for value in res[cat].values():
@@ -185,18 +233,10 @@ def outputfun(res, outputf):
     return True
 
 
-# def namelist():
-#     with open(inputfile, "r", encoding='utf-8', errors='ignore') as ann:
-#         ann_csv = csv.reader(ann)
-#         names = next(ann_csv)
-#     ann.close()
-#     names.pop()
-#     names.pop()
-#     return names
-
 if __name__ == "__main__":
-    result = analysing(readmatrix(user))
+    result = analysing(conmatrix(user))
 
-    print('Fleiss\' kappa:', format(flissmatrix(), '3.2%'))
+    print('Fleiss\' Kappa:', format(flissmatrix(), '3.2%'))
 
+    outputfile = 'id_' + user + '.csv'
     print(outputfun(result, outputfile))
