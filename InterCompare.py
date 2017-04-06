@@ -1,5 +1,6 @@
 from AnnAnalyst import analysing
 from AnnAnalyst import conmatrix
+from AnnAnalyst import fleiss
 import csv
 
 heading = (
@@ -17,6 +18,8 @@ heading = (
     'ExpectedAgreement',
     'Cohen\'sKappa'
 )
+
+fle = ('Fleiss\' Kappa:', fleiss())
 
 
 def namelist():
@@ -66,6 +69,7 @@ def outf(fname):
         ed_csv.writerow(heading)
         for line in table:
             ed_csv.writerow(line)
+        ed_csv.writerow(fle)
 
     ed.close()
     return True

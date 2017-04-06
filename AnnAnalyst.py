@@ -233,10 +233,14 @@ def outputfun(res, outputf):
     return True
 
 
+def fleiss():
+    fle = str(format(flissmatrix(), '3.4%'))
+    return fle
+
 if __name__ == "__main__":
     result = analysing(conmatrix(user))
 
-    print('Fleiss\' Kappa:', format(flissmatrix(), '3.2%'))
+    print('Fleiss\' Kappa:', fleiss())
 
     outputfile = 'id_' + user + '.csv'
     print(outputfun(result, outputfile))
