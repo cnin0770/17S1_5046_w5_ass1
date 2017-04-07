@@ -30,6 +30,10 @@ cats = (
 )
 
 
+def giveCats():
+    return cats
+
+
 def conmatrix(individual):
     gold = []
     pred = []
@@ -162,8 +166,8 @@ def analysing(matrix):
             analyst[cow]['recall'] = 1
             analyst[cow]['f1'] = 1
             analyst[cow]['accuracy'] = 1
-            analyst[cow]['marginalFalse'] = 1
-            analyst[cow]['marginalTrue'] = 0
+            analyst[cow]['marginalFalse'] = 0
+            analyst[cow]['marginalTrue'] = 1
             analyst[cow]['expectedAgreement'] = 1
             analyst[cow]['cohensKappa'] = 1
         else:
